@@ -1,0 +1,21 @@
+# Checklist Sebelum Submit
+
+- [x] `reza_harahap-pipeline.ipynb` sudah dijalankan seluruhnya.
+- [x] Tidak ada output error pada notebook.
+- [x] ExampleGen berhasil.
+- [x] StatisticsGen berhasil.
+- [x] SchemaGen berhasil.
+- [x] ExampleValidator berhasil dan hasil anomali diperiksa.
+- [x] Transform berhasil.
+- [x] Tuner berhasil dan menghasilkan `best_hyperparameters`.
+- [x] Trainer berhasil.
+- [x] Resolver berhasil.
+- [x] Evaluator berhasil dan model memperoleh blessing.
+- [x] Pusher berhasil.
+- [x] Folder `reza_harahap-pipeline` berisi artefak hasil eksekusi.
+- [x] Folder `serving_model` berisi model hasil push.
+- [x] Dataset CSV tersedia.
+- [x] README berisi nilai performa aktual.
+- [x] Notebook menyimpan semua output.
+- [x] ZIP hanya dibuat satu kali dan tidak berisi ZIP kedua.
+- [x] Nama dan username Dicoding sudah benar.
