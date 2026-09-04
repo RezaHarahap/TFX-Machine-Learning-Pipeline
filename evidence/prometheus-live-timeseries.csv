@@ -1,0 +1,7 @@
+timestamp_utc,prediction_request_count,average_latency_us,source
+2026-09-02T03:32:52.803894+00:00,8.0,13192.375,https://mlops-dicoding-reza-production.up.railway.app/monitoring/prometheus/metrics
+2026-09-02T03:33:07.281815+00:00,11.0,9798.90909090909,https://mlops-dicoding-reza-production.up.railway.app/monitoring/prometheus/metrics
+2026-09-02T03:33:19.281492+00:00,13.0,8403.153846153846,https://mlops-dicoding-reza-production.up.railway.app/monitoring/prometheus/metrics
+2026-09-02T03:33:29.100924+00:00,15.0,7371.6,https://mlops-dicoding-reza-production.up.railway.app/monitoring/prometheus/metrics
+2026-09-02T03:33:38.025051+00:00,16.0,6951.25,https://mlops-dicoding-reza-production.up.railway.app/monitoring/prometheus/metrics
+2026-09-02T03:33:47.600416+00:00,18.0,6264.277777777777,https://mlops-dicoding-reza-production.up.railway.app/monitoring/prometheus/metrics

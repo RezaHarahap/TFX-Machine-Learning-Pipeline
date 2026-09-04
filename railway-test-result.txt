@@ -1,0 +1,101 @@
+2026-09-02 17:50:04.762402: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+
+GET https://mlops-dicoding-reza-production.up.railway.app/v1/models/breast_cancer_model
+HTTP status: 200
+{
+  "model_version_status": [
+    {
+      "version": "2",
+      "state": "AVAILABLE",
+      "status": {
+        "error_code": "OK",
+        "error_message": ""
+      }
+    }
+  ]
+}
+
+GET https://mlops-dicoding-reza-production.up.railway.app/v1/models/breast_cancer_model/metadata
+HTTP status: 200
+{
+  "model_spec": {
+    "name": "breast_cancer_model",
+    "signature_name": "",
+    "version": "2"
+  },
+  "metadata": {
+    "signature_def": {
+      "signature_def": {
+        "serving_default": {
+          "inputs": {
+            "examples": {
+              "dtype": "DT_STRING",
+              "tensor_shape": {
+                "dim": [
+                  {
+                    "size": "-1",
+                    "name": ""
+                  }
+                ],
+                "unknown_rank": false
+              },
+              "name": "serving_default_examples:0"
+            }
+          },
+          "outputs": {
+            "outputs": {
+              "dtype": "DT_FLOAT",
+              "tensor_shape": {
+                "dim": [
+                  {
+                    "size": "-1",
+                    "name": ""
+                  },
+                  {
+                    "size": "1",
+                    "name": ""
+                  }
+                ],
+                "unknown_rank": false
+              },
+              "name": "StatefulPartitionedCall:0"
+            }
+          },
+          "method_name": "tensorflow/serving/predict",
+          "defaults": {}
+        },
+        "__saved_model_init_op": {
+          "inputs": {},
+          "outputs": {
+            "__saved_model_init_op": {
+              "dtype": "DT_INVALID",
+              "tensor_shape": {
+                "dim": [],
+                "unknown_rank": true
+              },
+              "name": "NoOp"
+            }
+          },
+          "method_name": "",
+          "defaults": {}
+        }
+      }
+    }
+  }
+}
+
+Metadata check PASSED: examples / DT_STRING
+
+POST https://mlops-dicoding-reza-production.up.railway.app/v1/models/breast_cancer_model:predict
+Payload: serialized tf.Example -> Base64
+HTTP status: 200
+{
+  "predictions": [
+    [
+      1.2218851e-07
+    ]
+  ]
+}
+
+RAILWAY PREDICTION TEST PASSED

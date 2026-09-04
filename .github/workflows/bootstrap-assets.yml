@@ -1,0 +1,85 @@
+name: Bootstrap ML assets
+
+# Legacy helper retained for manual use only.
+# IMPORTANT: Do not run automatically on push because it creates a manual
+# float feature model that is not the TFX Pusher SavedModel required by reviewer.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install tensorflow-cpu==2.15.1 scikit-learn==1.5.2 pandas==2.1.4 joblib==1.4.2
+
+      - name: Generate dataset and baseline metrics only
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          import joblib
+          import pandas as pd
+          from sklearn.datasets import load_breast_cancer
+          from sklearn.linear_model import LogisticRegression
+          from sklearn.metrics import accuracy_score, roc_auc_score
+          from sklearn.model_selection import train_test_split
+          from sklearn.preprocessing import StandardScaler
+
+          root = Path('.')
+          (root / 'data').mkdir(exist_ok=True)
+          (root / 'model-serving').mkdir(exist_ok=True)
+
+          ds = load_breast_cancer(as_frame=True)
+          df = ds.frame.rename(columns={'target': 'label'})
+          df.to_csv(root / 'data' / 'breast_cancer.csv', index=False)
+
+          X = df.drop(columns=['label']).astype('float32')
+          y = df['label'].astype('float32')
+          X_train, X_test, y_train, y_test = train_test_split(
+              X, y, test_size=0.2, random_state=42, stratify=y
+          )
+          scaler = StandardScaler()
+          X_train_scaled = scaler.fit_transform(X_train).astype('float32')
+          X_test_scaled = scaler.transform(X_test).astype('float32')
+          baseline = LogisticRegression(max_iter=2000, random_state=42)
+          baseline.fit(X_train_scaled, y_train)
+          proba = baseline.predict_proba(X_test_scaled)[:, 1]
+          pred = baseline.predict(X_test_scaled)
+          metrics = {
+              'auc': float(roc_auc_score(y_test, proba)),
+              'binary_accuracy': float(accuracy_score(y_test, pred)),
+          }
+          joblib.dump(
+              {'scaler': scaler, 'model': baseline, 'features': list(X.columns)},
+              root / 'model-serving' / 'baseline_model.joblib'
+          )
+          (root / 'model-serving' / 'metrics.json').write_text(json.dumps(metrics, indent=2))
+          print('Dataset:', df.shape, 'baseline metrics:', metrics)
+          print('serving_model is intentionally NOT generated here; TFX Pusher owns it.')
+          PY
+
+      - name: Commit generated baseline assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/breast_cancer.csv model-serving/baseline_model.joblib model-serving/metrics.json
+          if git diff --cached --quiet; then
+            echo "Baseline assets already up to date."
+          else
+            git commit -m "Refresh dataset and baseline assets [skip bootstrap]"
+            git push
+          fi

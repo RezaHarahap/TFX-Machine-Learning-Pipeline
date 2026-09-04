@@ -1,0 +1,17 @@
+FINAL SUBMISSION VALIDATION
+===========================
+TFX official-image execution: PASS
+BeamDagRunner output saved: PASS
+TFX artifact component coverage: PASS
+Best HP: learning_rate=0.01, hidden_units=32, dropout=0.30
+Evaluator BinaryAccuracy: 0.9705882352941176
+Evaluator AUC: 0.9944022391043582
+Evaluator BLESSED: PASS
+Pusher SavedModel serving_model/2: PASS
+Railway model version 2 AVAILABLE: PASS
+Railway input examples / DT_STRING: PASS
+Railway prediction serialized tf.Example Base64: PASS
+Railway prediction HTTP 200: PASS
+Railway predictions: [[1.2218851e-07]]
+Prometheus cloud target evidence: INCLUDED
+Current Railway ACTIVE deployment screenshot: INCLUDED

@@ -1,0 +1,63 @@
+FINAL STATIC AUDIT
+==================
+PASS | dataset 
+PASS | pipeline:CsvExampleGen 
+PASS | pipeline:StatisticsGen 
+PASS | pipeline:SchemaGen 
+PASS | pipeline:ExampleValidator 
+PASS | pipeline:Transform 
+PASS | pipeline:Tuner 
+PASS | pipeline:Trainer 
+PASS | pipeline:Resolver 
+PASS | pipeline:Evaluator 
+PASS | pipeline:Pusher 
+PASS | pipeline:pipeline.Pipeline 
+PASS | pipeline:BeamDagRunner 
+PASS | pipeline no LocalDagRunner entry point 
+PASS | artifact:CsvExampleGen 
+PASS | artifact:StatisticsGen 
+PASS | artifact:SchemaGen 
+PASS | artifact:ExampleValidator 
+PASS | artifact:Transform 
+PASS | artifact:Tuner 
+PASS | artifact:Trainer 
+PASS | artifact:Evaluator 
+PASS | artifact:Pusher 
+PASS | tuner hp artifact 
+PASS | hp lr {'learning_rate': 0.01, 'hidden_units': 32, 'dropout': 0.30000000000000004}
+PASS | hp hidden {'learning_rate': 0.01, 'hidden_units': 32, 'dropout': 0.30000000000000004}
+PASS | hp dropout {'learning_rate': 0.01, 'hidden_units': 32, 'dropout': 0.30000000000000004}
+PASS | evaluator blessed 
+PASS | pusher savedmodel 
+PASS | reza_harahap.ipynb beam success 
+PASS | reza_harahap.ipynb final pass 
+PASS | reza_harahap.ipynb execution counts 
+PASS | reza_harahap-pipeline.ipynb beam success 
+PASS | reza_harahap-pipeline.ipynb final pass 
+PASS | reza_harahap-pipeline.ipynb execution counts 
+PASS | reza_harahap-submission.ipynb beam success 
+PASS | reza_harahap-submission.ipynb final pass 
+PASS | reza_harahap-submission.ipynb execution counts 
+PASS | testing:Metadata check PASSED: examples / DT_STRING 
+PASS | testing:HTTP status: 200 
+PASS | testing:RAILWAY PREDICTION TEST PASSED 
+PASS | testing:predictions 
+PASS | testing:1.2218851e-07 
+PASS | request:tf.train.Example 
+PASS | request:base64.b64encode 
+PASS | request:"examples" 
+PASS | request:"b64" 
+PASS | request no raw float payload 
+PASS | README:learning_rate = 0.01 
+PASS | README:hidden_units = 32 
+PASS | README:dropout = 0.30 
+PASS | README:Dense(32, ReLU) 
+PASS | README:Dense(16, ReLU) 
+PASS | README:0.9705882353 
+PASS | README:0.9944022391 
+PASS | README:`examples: DT_STRING` 
+PASS | docker no stale grafana-server copy 
+PASS | grafana modern path 
+PASS | evidence root:reza_harahap-deployment.png 
+PASS | evidence root:reza_harahap-monitoring.png 
+PASS | evidence root:reza_harahap-pylint.png 

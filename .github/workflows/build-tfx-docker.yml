@@ -1,0 +1,126 @@
+name: Build TFX Notebook and Artifacts with Official Image
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-tfx-docker.yml'
+      - 'pipeline.py'
+      - 'modules/**'
+      - 'data/**'
+      - 'reza_harahap-pipeline.ipynb'
+      - 'reza_harahap-testing.ipynb'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Clean previous runtime outputs
+        run: |
+          sudo rm -rf reza_harahap-pipeline serving_model metadata.sqlite
+          mkdir -p serving_model
+
+      - name: Execute notebook in official TFX 1.15.1 image
+        run: |
+          docker pull tensorflow/tfx:1.15.1
+          docker run --rm \
+            --entrypoint /bin/bash \
+            -v "$PWD:/workspace" \
+            -w /workspace \
+            tensorflow/tfx:1.15.1 \
+            -lc 'pip install -q nbconvert ipykernel && jupyter nbconvert --to notebook --execute reza_harahap-pipeline.ipynb --output reza_harahap-pipeline-EXECUTED.ipynb --ExecutePreprocessor.timeout=-1'
+
+      - name: Replace notebook with executed evidence copy
+        run: |
+          test -f reza_harahap-pipeline-EXECUTED.ipynb
+          mv reza_harahap-pipeline-EXECUTED.ipynb reza_harahap-pipeline.ipynb
+
+      - name: Validate reviewer-required artifacts and notebook outputs
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          root=Path('reza_harahap-pipeline')
+          assert root.exists(), 'reza_harahap-pipeline missing'
+          files=[p for p in root.rglob('*') if p.is_file()]
+          print('Artifact files:', len(files))
+          assert len(files) > 10, 'real TFX artifacts were not generated'
+          for keyword in ['CsvExampleGen','StatisticsGen','SchemaGen','ExampleValidator','Transform','Tuner','Trainer','Evaluator','Pusher']:
+              p=root/keyword
+              hits=[x for x in p.rglob('*') if x.is_file()] if p.exists() else []
+              print(keyword, len(hits))
+              assert hits, f'{keyword} artifact missing'
+          saved=list(Path('serving_model').rglob('saved_model.pb'))
+          print('Pushed SavedModel:', saved)
+          assert saved, 'Pusher SavedModel missing'
+          blessed=list((root/'Evaluator').rglob('BLESSED'))
+          print('Evaluator BLESSED:', bool(blessed))
+          assert blessed, 'Evaluator did not bless model'
+          hp=list((root/'Tuner').rglob('best_hyperparameters.txt'))
+          assert hp, 'Tuner best hyperparameters missing'
+          print('Best hyperparameters:', hp[-1].read_text())
+          nb=json.loads(Path('reza_harahap-pipeline.ipynb').read_text())
+          outputs='\n'.join(str(o) for c in nb['cells'] for o in c.get('outputs',[]))
+          assert 'TFX PIPELINE EXECUTION COMPLETED SUCCESSFULLY' in outputs, 'Beam execution success output missing from notebook'
+          assert 'ALL REVIEWER-CRITICAL TFX CHECKS PASSED' in outputs, 'Final reviewer check output missing from notebook'
+          print('Notebook contains real Beam execution outputs.')
+          PY
+
+      - name: Normalize Pusher model to TensorFlow Serving version 2
+        run: |
+          SRC_MODEL="$(find serving_model -type f -name saved_model.pb -print -quit)"
+          test -n "$SRC_MODEL"
+          SRC_DIR="$(dirname "$SRC_MODEL")"
+          echo "Pusher SavedModel source: $SRC_DIR"
+          sudo rm -rf /tmp/tfx_pusher_model
+          sudo cp -a "$SRC_DIR" /tmp/tfx_pusher_model
+          sudo rm -rf serving_model
+          mkdir -p serving_model/2
+          sudo cp -a /tmp/tfx_pusher_model/. serving_model/2/
+          sudo chown -R "$(id -u):$(id -g)" serving_model
+          test -f serving_model/2/saved_model.pb
+          echo "Railway serving model prepared at serving_model/2"
+
+      - name: Commit exact TFX Pusher SavedModel for Railway
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A serving_model
+          if git diff --cached --quiet; then
+            echo "TFX Pusher SavedModel already current."
+          else
+            git commit -m "Deploy TFX Pusher SavedModel to Railway [skip bootstrap]"
+            git push
+          fi
+
+      - name: Package reviewer-ready submission
+        run: |
+          zip -qr mlops-reviewer-ready.zip . \
+            -x '.git/*' \
+            -x 'mlops-reviewer-ready.zip'
+
+      - name: Upload reviewer-ready package
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlops-reviewer-ready
+          path: mlops-reviewer-ready.zip
+          retention-days: 30
+
+      - name: Upload executed notebook and TFX artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: executed-notebook-and-tfx-artifacts
+          path: |
+            reza_harahap-pipeline.ipynb
+            reza_harahap-pipeline/
+            serving_model/
+          retention-days: 30
